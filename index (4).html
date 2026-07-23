@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AME/QME Mileage & Parking Reimbursement Calculator</title>
+<style>
+  :root {
+    --ink: #1c2733;
+    --ink-soft: #46566b;
+    --line: #d7dde5;
+    --line-soft: #eaeef2;
+    --paper: #fbfaf7;
+    --panel: #ffffff;
+    --accent: #6b4226;
+    --accent-soft: #f2e9e0;
+    --good: #2f5d43;
+    --good-bg: #eaf3ee;
+    --mono: 'Courier New', Courier, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif;
+    padding: 32px 20px 60px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 14px;
+    margin-bottom: 28px;
+  }
+  header .eyebrow {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: normal;
+    letter-spacing: 0.01em;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 22px 24px;
+    margin-bottom: 20px;
+  }
+  .panel h2 {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .row { display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+  .field { flex: 1 1 220px; min-width: 0; }
+  .field label {
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+  }
+  .field input, .field textarea {
+    width: 100%;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    background: #fdfcfa;
+    color: var(--ink);
+  }
+  .field textarea { resize: vertical; min-height: 44px; font-family: Georgia, serif; }
+  .field input:focus, .field textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .hint { font-size: 11px; color: var(--ink-soft); margin-top: 4px; font-family: Arial, Helvetica, sans-serif; }
+
+  .maps-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 9px 16px;
+    cursor: pointer;
+    text-decoration: none;
+    margin-top: 4px;
+  }
+  .maps-btn:hover { background: var(--accent); color: #fff; }
+  .maps-btn[disabled] { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+  .calc-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    align-items: end;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .op { font-family: Arial, Helvetica, sans-serif; font-size: 18px; color: var(--ink-soft); text-align: center; padding-bottom: 10px; }
+
+  .subtotal-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    padding: 8px 0;
+    border-top: 1px solid var(--line-soft);
+    margin-top: 10px;
+  }
+  .subtotal-line span:last-child { font-family: var(--mono); font-size: 14px; }
+
+  .total-box {
+    background: var(--good-bg);
+    border: 1px solid var(--good);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+  }
+  .total-box .label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--good);
+  }
+  .total-box .amount {
+    font-family: var(--mono);
+    font-size: 26px;
+    font-weight: bold;
+    color: var(--good);
+  }
+
+  .output-panel { border-color: var(--ink); }
+  .output-panel h2 { color: var(--ink); }
+  .letter-text {
+    font-family: Georgia, serif;
+    font-size: 14.5px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    background: #fdfcfa;
+    border: 1px solid var(--line-soft);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+  }
+  .letter-text .fill {
+    background: #fff3d6;
+    padding: 0 2px;
+  }
+  .copy-btn {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    cursor: pointer;
+  }
+  .copy-btn:hover { background: var(--accent); }
+  .copy-btn.copied { background: var(--good); }
+
+  footer {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 30px;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 560px) {
+    .calc-grid { grid-template-columns: 1fr; }
+    .op { text-align: left; padding-bottom: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">AME / QME Reimbursement Worksheet</div>
+    <h1>Mileage &amp; Parking Calculator</h1>
+  </header>
+
+  <div class="panel">
+    <h2>1 — Distance</h2>
+    <div class="row">
+      <div class="field">
+        <label for="origin">Applicant address</label>
+        <textarea id="origin" placeholder="Street, City, State ZIP"></textarea>
+      </div>
+      <div class="field">
+        <label for="dest">Evaluator address</label>
+        <textarea id="dest" placeholder="Street, City, State ZIP"></textarea>
+      </div>
+    </div>
+    <a id="mapsLink" class="maps-btn" href="#" target="_blank" rel="noopener" disabled>Open one-way route in Google Maps &rarr;</a>
+    <div class="hint">Opens Google Maps with both addresses filled in. Read the one-way mileage off the route, then enter it below.</div>
+
+    <div class="row" style="margin-top:18px;">
+      <div class="field" style="max-width:220px;">
+        <label for="oneWay">One-way mileage</label>
+        <input type="number" id="oneWay" step="0.1" min="0" placeholder="e.g. 14.2">
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>2 — Reimbursement</h2>
+
+    <div class="calc-grid">
+      <div class="field">
+        <label>Round-trip mileage</label>
+        <input type="text" id="roundTrip" readonly style="background:#f4f2ee;">
+      </div>
+      <div class="op">&times;</div>
+      <div class="field">
+        <label for="rate">Rate per mile</label>
+        <input type="number" id="rate" step="0.001" value="0.725">
+      </div>
+      <div class="op">=</div>
+      <div class="field">
+        <label>Mileage cost</label>
+        <input type="text" id="mileageCost" readonly style="background:#f4f2ee;">
+      </div>
+    </div>
+
+    <div class="subtotal-line">
+      <span>Mileage subtotal</span>
+      <span id="mileageSubtotalDisplay">$0.00</span>
+    </div>
+
+    <div class="row" style="margin-top:6px;">
+      <div class="field" style="max-width:220px;">
+        <label for="parking">Parking fee (max)</label>
+        <input type="number" id="parking" step="0.01" min="0" placeholder="e.g. 25.00">
+      </div>
+    </div>
+
+    <div class="total-box">
+      <span class="label">Total reimbursement</span>
+      <span class="amount" id="totalAmount">$0.00</span>
+    </div>
+  </div>
+
+  <div class="panel output-panel">
+    <h2>3 — Paste into letter</h2>
+    <div class="hint" style="margin-bottom:12px;">Paragraph 1 and the applicant's address/SSN in paragraph 3 are already auto-populated by MerusCase — this is just the mileage/parking paragraph and the payment-amount line.</div>
+    <div class="letter-text" id="letterOutput"></div>
+    <button class="copy-btn" id="copyBtn">Copy letter text</button>
+  </div>
+
+  <footer>
+    Runs entirely in your browser — nothing is sent anywhere. Mileage still has to be read off Google Maps by eye (no map service is wired in), but the button above saves the copy-paste-into-Maps step. Everything downstream — doubling, multiplying, adding parking, and dropping the two totals into the letter — is automatic.
+  </footer>
+
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+
+  function fmt(n) {
+    return '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+
+  function updateMapsLink() {
+    const o = $('origin').value.trim();
+    const d = $('dest').value.trim();
+    const link = $('mapsLink');
+    if (o && d) {
+      const url = 'https://www.google.com/maps/dir/?api=1&origin=' + encodeURIComponent(o) + '&destination=' + encodeURIComponent(d) + '&travelmode=driving';
+      link.href = url;
+      link.removeAttribute('disabled');
+    } else {
+      link.href = '#';
+      link.setAttribute('disabled', 'true');
+    }
+  }
+
+  function recalc() {
+    const oneWay = parseFloat($('oneWay').value) || 0;
+    const rate = parseFloat($('rate').value) || 0;
+    const parking = parseFloat($('parking').value) || 0;
+
+    const roundTrip = oneWay * 2;
+    const mileageCost = roundTrip * rate;
+    const total = mileageCost + parking;
+
+    $('roundTrip').value = roundTrip ? roundTrip.toFixed(1) + ' mi' : '';
+    $('mileageCost').value = mileageCost ? fmt(mileageCost) : '';
+    $('mileageSubtotalDisplay').textContent = fmt(mileageCost);
+    $('totalAmount').textContent = fmt(total);
+
+    updateLetter(roundTrip, rate, parking, total);
+  }
+
+  function markFill(s, placeholder) {
+    const val = s && s.trim() ? s : placeholder;
+    return '<span class="fill">' + val + '</span>';
+  }
+
+  function updateLetter(roundTrip, rate, parking, total) {
+    const rtStr = roundTrip ? roundTrip.toFixed(1) : '____';
+    const rateStr = rate ? rate.toFixed(3) : '0.725';
+    const parkStr = parking ? parking.toFixed(2) : '___.00';
+    const totalStr = total ? total.toFixed(2) : '___.__';
+
+    const html =
+`At this time, I recommend you issue payment to the applicant for round-trip mileage of ${markFill(rtStr, '____')} miles at the rate of $${rateStr} per mile, with a maximum parking fee of $${parkStr}, for a total payment of $${totalStr}.
+
+<strong><u>RECOMMENDATION:</u></strong>
+
+Please issue timely payment to applicant for the upcoming AME evaluation as follows:
+$${totalStr}`;
+
+    $('letterOutput').innerHTML = html;
+  }
+
+  ['origin','dest'].forEach(id => $(id).addEventListener('input', updateMapsLink));
+  ['oneWay','rate','parking','specialty','examType','docName','evalDate','destLine1','destLine2']
+    .forEach(id => $(id).addEventListener('input', recalc));
+
+  $('copyBtn').addEventListener('click', async () => {
+    const el = $('letterOutput');
+    const html = el.innerHTML;
+    const plain = el.innerText;
+    const btn = $('copyBtn');
+    try {
+      if (window.ClipboardItem) {
+        const item = new ClipboardItem({
+          'text/html': new Blob([html], {type: 'text/html'}),
+          'text/plain': new Blob([plain], {type: 'text/plain'})
+        });
+        await navigator.clipboard.write([item]);
+      } else {
+        await navigator.clipboard.writeText(plain);
+      }
+      btn.textContent = 'Copied (formatted)';
+      btn.classList.add('copied');
+    } catch (e) {
+      // fallback if rich copy is blocked
+      await navigator.clipboard.writeText(plain);
+      btn.textContent = 'Copied (plain text)';
+      btn.classList.add('copied');
+    }
+    setTimeout(() => { btn.textContent = 'Copy letter text'; btn.classList.remove('copied'); }, 1800);
+  });
+
+  updateMapsLink();
+  recalc();
+</script>
+</body>
+</html>
